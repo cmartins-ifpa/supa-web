@@ -26,7 +26,8 @@
 			<h4 id="form-titulo">Novo cadastro</h4>
 			<label>Nome: </label><input type="text" name="nome" id="input-nome"><br>
 			<label>Curso: </label><input type="text" name="curso" id="input-curso"><br>
-
+            <input type="hidden" name="id" id="input-id">
+			
 			<input type="button" id="btn-salvar" value="Salvar">
 			<input type="button" id="btn-cancelar" value="Cancelar">
 		</form>
@@ -42,12 +43,31 @@
 	const apiUrl = 'https://wysuajcwufbjxewagrvw.supabase.co/rest/v1/aluno';
 	const apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5c3VhamN3dWZianhld2FncnZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODI2MDM4NTEsImV4cCI6MTk5ODE3OTg1MX0.r8MxIPZcazelv4NzeSnZe9QmpXdbcdL3Htdxup721Oc';
 	const apiAuthorization = 'Bearer ' + apiKey;
+	var  edicao = false;
 
 	// $(document).ready(() => {  // inicializador da página. Pode usar tambem este modo: 
 	$(function () {
 		consultarCad();
 
 	});
+	function editarCadastro(id_, nome_, curso_) {
+	  // codigo para atualizar o cadastro do aluno
+	  // operação = PATCH
+	  // url = apiUrl + '?id='+ id_
+	  
+	  // exibir o formulário 
+	  
+	  
+	  // muda para edicao de UPDATE
+	  $('#form-cad').css('display', 'block');
+		$('#input-nome').focus();
+		$('#input-nome').val(nome_);
+		$('#input-curso').val(curso_);
+	    $('#input-id').val(id_);
+	    edicao = true;
+	}
+
+    
 
 	function consultarCad(url) {
 		$.ajax({
@@ -87,11 +107,14 @@
 		});
 	};
 
+
 	$('#bt-incluir').click(function () {
 		$('#form-cad').css('display', 'block');
 		$('#input-nome').focus();
 		$('#input-nome').val('');
 		$('#input-curso').val('');
+		// muda para edicao de UPDATE
+	    edicao = false;
 	});
 
 
@@ -101,12 +124,28 @@
 
 	$('#btn-salvar').click(function () {
 		console.log("salvando...");
-		let dados = {
-			nome: $('#input-nome').val(),
-			curso: $('#input-curso').val()
-		};
-
-		$.ajax({
+		
+        let dados;
+		if (edicao) {
+			dados = {
+				nome: $('#input-nome').val(),
+				curso: $('#input-curso').val(),
+				id: $('#input-id').val()
+			};
+		   salvarUpdate(dados);
+		} else {
+			dados = {
+				nome: $('#input-nome').val(),
+				curso: $('#input-curso').val() 
+			};
+		    incluir(dados);
+		}
+	});	
+	
+	function incluir(dados){
+	    console.log("incluir dados", apiUrl);
+		console.log(dados);
+	    $.ajax({
 			type: 'post',
 			url: apiUrl,
 			data: JSON.stringify(dados), // O método JSON.stringify() converte valores em javascript para uma String JSON.
@@ -124,5 +163,33 @@
 				window.alert("Ocorreu um erro: " + erro.message);
 			}
 		});
-	});	
+	}
+	
+	function salvarUpdate(dados){
+	    let urlUpdate = apiUrl + '?id='+ dados.id;
+		let dadosUpdate = { nome: dados.nome,  curso: dados.curso};
+		
+        console.log("Update", urlUpdate);
+		console.log(dadosUpdate);
+		$.ajax({
+			type: 'PATCH',
+			url: urlUpdate,
+			data: JSON.stringify(dadosUpdate), // O método JSON.stringify() converte valores em javascript para uma String JSON.
+			contentType: 'application/json; charset=utf-8',
+			crossDomain: true,
+			headers: {
+				'apikey': apiKey,
+				'Authorization': apiAuthorization,
+				'Prefer': 'minimal'
+			},
+			success: function (dados, xhr, textStatus) {
+				consultarCad();
+				$('#form-cad').css('display', 'none');
+			},
+			error: (erro) => {
+				window.alert("Ocorreu um erro: " + erro.message);
+			}
+		});
+	}
+	
 </script>
