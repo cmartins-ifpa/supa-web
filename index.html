@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <!-- Bootstrap 5 CSS   -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Bootstrap 5 - JavaScript Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+   
+  <!-- Bootstrap 5 icons  -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+
+  <!-- JQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> 
+</head>
+
+<body>
+  <div class="container mt-3">
+	<h1>Cadastro de Alunos</h1>
+    <button id="bt-incluir">Novo Cadasto</button>
+	<table id="tabela" class="table table-bordered"></table>
+ 
+	<form id="form-cad" style="display: none;">
+		<h4 id="form-titulo">Novo Contato</h4>
+		<label>Nome: </label><input type="text" name="nome" id="input-nome"><br>
+		<label>Curso: </label><input type="text" name="curso" id="input-curso"><br>
+		
+		<input type="button" id="btn-salvar" value="Salvar">
+		<input type="button" id="btn-cancelar" value="Cancelar">
+	</form>
+  </div>
+</body>
+</html>
+
+<script>
+    const apiUrl = 'https://wysuajcwufbjxewagrvw.supabase.co/rest/v1/aluno';
+	const apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind5c3VhamN3dWZianhld2FncnZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODI2MDM4NTEsImV4cCI6MTk5ODE3OTg1MX0.r8MxIPZcazelv4NzeSnZe9QmpXdbcdL3Htdxup721Oc';
+	const apiAuthorization = 'Bearer ' + apiKey;
+
+   // $(document).ready(() => {  // inicializador da página. Pode usar tambem este modo: 
+    $(function() {
+     consultarCad(); 
+     
+    });
+   
+   function consultarCad(url) {
+    $.ajax({
+			type: 'get',
+			url: url || (apiUrl + '?select=*'),  // utiliza-se o parametro "url" caso seja passado 
+			dataType: 'json',
+			contentType: 'application/json; charset=utf-8',
+			crossDomain: true,
+			headers: {
+				'apikey': apiKey,
+				'Authorization': apiAuthorization
+			},
+			success: (contatos) => {
+				let contatosStr = '<tr><th>Id</th>'+
+				                       '<th>Nome</th>'+
+									   '<th>Curso</th>'+
+									   '<th>Criado-em</th>'+
+									   '<th>Edit</th><th>Del</th></tr>';
+				for (contato of contatos) {
+				    contatosStr +=
+							'<tr>' +
+								'<td>' + contato.id + '</td>' +
+								'<td>' + contato.nome + '</td>' +
+								'<td>' + contato.curso + '</td>' +
+								'<td>' + contato.dt_criacao + '</td>' +
+								'<td><i class="bi bi-pencil-fill" onclick="editarContato(' + contato.id + ',\''
+										+ contato.nome + '\',\''
+										+ contato.telefone + '\',\'' 
+										+ contato.email + '\');"></i></td>' + 
+								'<td><i class="bi bi-trash-fill" onclick="deletarContato(' + contato.id + ');"></i></td>' + 
+							'</tr>';
+				}
+				$('#tabela').html(contatosStr);
+			},
+			error: (erro) => {
+				window.alert("Ocorreu um erro: " + JSON.stringify(erro));
+			}
+		});
+	};
+
+	$('#bt-incluir').click(function() {
+		$('#form-cad').css('display', 'block');
+		$('#input-nome').focus();
+		$('#input-nome').val('');
+		$('#input-curso').val('');
+	});
+ 
+	
+	$('#btn-cancelar').click(() => {
+		$('#form-cad').css('display', 'none');
+	});
+
+	$('#btn-salvar').click(function() {
+		console.log("salvando...");
+		let dados = {
+			nome: $('#input-nome').val(),
+			curso: $('#input-curso').val()			
+		};
+		 
+		$.ajax({
+			type: 'post',
+			url: apiUrl,
+			data: JSON.stringify(dados), // O método JSON.stringify() converte valores em javascript para uma String JSON.
+			contentType: 'application/json; charset=utf-8',
+			crossDomain: true,
+			headers: {
+				'apikey': apiKey,
+				'Authorization': apiAuthorization
+			},
+			success: function(dados, xhr, textStatus) {  
+				consultarCad();
+				$('#form-cad').css('display', 'none');
+			},
+			error: (erro) => {
+				window.alert("Ocorreu um erro: " + erro.message);
+			}
+		});
+	});	
+</script>
+
