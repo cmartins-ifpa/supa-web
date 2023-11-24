@@ -164,9 +164,15 @@
 			}
 		});
 	}
+	function deletarCadastro(id){
+	    // codigo para deletar o cad de aluno pelo Id
+		console.log("deletando o ", id);
+		
+	}
+	
 	
 	function salvarUpdate(dados){
-	    let urlUpdate = apiUrl + '?id='+ dados.id;
+	    let urlUpdate = apiUrl + '?id=eq.'+ dados.id;
 		let dadosUpdate = { nome: dados.nome,  curso: dados.curso};
 		
         console.log("Update", urlUpdate);
